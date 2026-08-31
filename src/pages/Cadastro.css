@@ -1,0 +1,392 @@
+.cadastro-page {
+  min-height: 100vh;
+
+  background: #fffaf5;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 40px 20px;
+
+  position: relative;
+}
+
+
+
+.cadastro-back {
+  position: absolute;
+
+  top: 28px;
+
+  left: 35px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #ff6b35;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+
+.cadastro-wrapper {
+  width: 100%;
+
+  max-width: 440px;
+}
+
+
+
+.cadastro-brand {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  color: #ff6b35;
+
+  font-size: 32px;
+
+  font-weight: 800;
+
+  margin-bottom: 25px;
+}
+
+
+
+.cadastro-card {
+  width: 100%;
+
+  background: white;
+
+  border-radius: 28px;
+
+  padding: 38px;
+
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, 0.08);
+}
+
+
+
+.cadastro-title {
+  text-align: center;
+
+  margin-bottom: 28px;
+}
+
+
+
+.cadastro-title h1 {
+  color: #263238;
+
+  font-size: 28px;
+
+  line-height: 1.2;
+
+  margin: 0 0 10px;
+}
+
+
+
+.cadastro-title p {
+  color: #777;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  margin: 0;
+}
+
+
+
+.cadastro-field {
+  margin-bottom: 18px;
+}
+
+
+
+.cadastro-field label {
+  display: block;
+
+  color: #263238;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  margin-bottom: 8px;
+}
+
+
+
+.cadastro-input {
+  width: 100%;
+
+  height: 52px;
+
+  border: 1px solid #e1e1e1;
+
+  border-radius: 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 15px;
+
+  transition: 0.2s;
+}
+
+
+
+.cadastro-input:focus-within {
+  border-color: #ff6b35;
+
+  box-shadow:
+    0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+
+
+.cadastro-input > svg {
+  color: #999;
+
+  flex-shrink: 0;
+}
+
+
+
+.cadastro-input input {
+  width: 100%;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  color: #263238;
+
+  font-size: 15px;
+}
+
+
+
+.cadastro-input input::placeholder {
+  color: #aaa;
+}
+
+
+
+.cadastro-password-button {
+  border: none;
+
+  background: transparent;
+
+  color: #888;
+
+  display: flex;
+
+  align-items: center;
+
+  padding: 3px;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
+}
+
+
+
+.cadastro-error {
+  background: #fff0ed;
+
+  border: 1px solid #ffd0c5;
+
+  color: #d94a25;
+
+  border-radius: 12px;
+
+  padding: 12px 14px;
+
+  font-size: 13px;
+
+  margin-bottom: 16px;
+
+  line-height: 1.4;
+}
+
+
+
+.cadastro-success {
+  background: #eefaf1;
+
+  border: 1px solid #c8ebd0;
+
+  color: #287a3d;
+
+  border-radius: 12px;
+
+  padding: 12px 14px;
+
+  font-size: 13px;
+
+  margin-bottom: 16px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+
+.cadastro-submit {
+  width: 100%;
+
+  height: 52px;
+
+  border: none;
+
+  border-radius: 15px;
+
+  background: #ff6b35;
+
+  color: white;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+
+
+.cadastro-submit:hover:not(:disabled) {
+  background: #ed5d2b;
+
+  transform: translateY(-1px);
+}
+
+
+
+.cadastro-submit:disabled {
+  opacity: 0.7;
+
+  cursor: default;
+}
+
+
+
+.cadastro-divider {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin: 25px 0;
+
+  color: #aaa;
+
+  font-size: 13px;
+}
+
+
+
+.cadastro-divider::before,
+.cadastro-divider::after {
+  content: "";
+
+  height: 1px;
+
+  background: #e8e8e8;
+
+  flex: 1;
+}
+
+
+
+.cadastro-login {
+  text-align: center;
+
+  color: #777;
+
+  font-size: 14px;
+
+  margin: 0;
+}
+
+
+
+.cadastro-login a {
+  color: #ff6b35;
+
+  font-weight: 700;
+
+  margin-left: 5px;
+}
+
+
+
+@media (max-width: 600px) {
+
+  .cadastro-page {
+    padding: 80px 16px 30px;
+  }
+
+
+
+  .cadastro-back {
+    top: 20px;
+
+    left: 20px;
+  }
+
+
+
+  .cadastro-card {
+    padding: 28px 22px;
+
+    border-radius: 22px;
+  }
+
+
+
+  .cadastro-title h1 {
+    font-size: 25px;
+  }
+
+
+
+  .cadastro-brand {
+    font-size: 28px;
+  }
+
+}

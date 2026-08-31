@@ -1,0 +1,861 @@
+/* =========================================================
+   RECEITAÍ
+   TELA DE DETALHES DA RECEITA
+   ========================================================= */
+
+
+* {
+  box-sizing: border-box;
+}
+
+
+.detalhes-page {
+
+  min-height: 100vh;
+
+  background: #fffaf5;
+
+  color: #263238;
+
+  padding-bottom: 80px;
+
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+
+.detalhes-header {
+
+  width: min(1180px, calc(100% - 48px));
+
+  height: 86px;
+
+  margin: 0 auto;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  border-bottom: 1px solid #f1e8e1;
+
+}
+
+
+.detalhes-voltar {
+
+  border: none;
+
+  background: transparent;
+
+  color: #263238;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  padding: 10px 0;
+
+  transition: 0.2s ease;
+
+}
+
+
+.detalhes-voltar:hover {
+
+  color: #ff6b35;
+
+  transform: translateX(-3px);
+
+}
+
+
+.detalhes-logo {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: #ff6b35;
+
+  font-size: 22px;
+
+  font-weight: 800;
+
+}
+
+
+/* =========================================================
+   CONTAINER PRINCIPAL
+   ========================================================= */
+
+
+.detalhes-container {
+
+  width: min(1180px, calc(100% - 48px));
+
+  margin: 42px auto 0;
+
+}
+
+
+/* =========================================================
+   IMAGEM
+   ========================================================= */
+
+
+.detalhes-imagem-container {
+
+  width: 100%;
+
+  height: 420px;
+
+  position: relative;
+
+  overflow: hidden;
+
+  border-radius: 28px;
+
+  background: #f3e8df;
+
+  box-shadow: 0 12px 35px rgba(38, 50, 56, 0.08);
+
+}
+
+
+.detalhes-imagem {
+
+  width: 100%;
+
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+}
+
+
+.detalhes-imagem-placeholder {
+
+  width: 100%;
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 70px;
+
+}
+
+
+/* =========================================================
+   BOTÃO FAVORITO SOBRE A IMAGEM
+   ========================================================= */
+
+
+.detalhes-favorito {
+
+  position: absolute;
+
+  top: 20px;
+
+  right: 20px;
+
+  width: 52px;
+
+  height: 52px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: white;
+
+  color: #ff6b35;
+
+  font-size: 28px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+
+  transition: 0.2s ease;
+
+}
+
+
+.detalhes-favorito:hover {
+
+  transform: scale(1.08);
+
+}
+
+
+.detalhes-favorito.ativo {
+
+  background: #ff6b35;
+
+  color: white;
+
+}
+
+
+/* =========================================================
+   CONTEÚDO
+   ========================================================= */
+
+
+.detalhes-conteudo {
+
+  width: min(900px, 100%);
+
+  margin: 42px auto 0;
+
+}
+
+
+.detalhes-categoria {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 8px 15px;
+
+  border-radius: 20px;
+
+  background: #ffe7d5;
+
+  color: #e85d2a;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+}
+
+
+.detalhes-titulo {
+
+  margin: 15px 0 12px;
+
+  font-size: clamp(34px, 5vw, 52px);
+
+  line-height: 1.08;
+
+  letter-spacing: -1.5px;
+
+  color: #263238;
+
+}
+
+
+.detalhes-descricao {
+
+  margin: 0;
+
+  max-width: 760px;
+
+  color: #667078;
+
+  font-size: 17px;
+
+  line-height: 1.7;
+
+}
+
+
+/* =========================================================
+   INFORMAÇÕES
+   ========================================================= */
+
+
+.detalhes-info {
+
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 16px;
+
+  margin-top: 30px;
+
+}
+
+
+.info-item {
+
+  min-height: 78px;
+
+  padding: 15px 17px;
+
+  background: white;
+
+  border: 1px solid #f0e7e0;
+
+  border-radius: 17px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+}
+
+
+.info-icon {
+
+  width: 40px;
+
+  height: 40px;
+
+  border-radius: 12px;
+
+  background: #fff0e7;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 19px;
+
+}
+
+
+.info-item div {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+}
+
+
+.info-item small {
+
+  color: #899197;
+
+  font-size: 12px;
+
+}
+
+
+.info-item strong {
+
+  color: #263238;
+
+  font-size: 14px;
+
+}
+
+
+/* =========================================================
+   SEÇÕES
+   ========================================================= */
+
+
+.detalhes-secao {
+
+  margin-top: 45px;
+
+  padding: 30px;
+
+  background: white;
+
+  border-radius: 24px;
+
+  border: 1px solid #f0e7e0;
+
+  box-shadow: 0 8px 25px rgba(38, 50, 56, 0.04);
+
+}
+
+
+.detalhes-secao h2 {
+
+  margin: 0;
+
+  font-size: 25px;
+
+  color: #263238;
+
+}
+
+
+.secao-subtitulo {
+
+  margin: 8px 0 24px;
+
+  color: #7b858a;
+
+  font-size: 14px;
+
+}
+
+
+/* =========================================================
+   INGREDIENTES
+   ========================================================= */
+
+
+.ingredientes-lista {
+
+  display: grid;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 12px;
+
+}
+
+
+.ingrediente-item {
+
+  min-height: 48px;
+
+  padding: 12px 15px;
+
+  background: #fffaf5;
+
+  border-radius: 13px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: #424b50;
+
+  font-size: 14px;
+
+}
+
+
+.ingrediente-check {
+
+  width: 25px;
+
+  height: 25px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #ffe1ce;
+
+  color: #ff6b35;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+}
+
+
+/* =========================================================
+   PREPARO
+   ========================================================= */
+
+
+.preparo-secao {
+
+  margin-top: 25px;
+
+}
+
+
+.preparo-texto {
+
+  color: #424b50;
+
+  font-size: 16px;
+
+  line-height: 1.8;
+
+  background: #fffaf5;
+
+  border-radius: 16px;
+
+  padding: 22px;
+
+}
+
+
+/* =========================================================
+   AÇÕES
+   ========================================================= */
+
+
+.detalhes-acoes {
+
+  margin-top: 30px;
+
+  display: flex;
+
+  gap: 14px;
+
+  flex-wrap: wrap;
+
+}
+
+
+.btn-favorito {
+
+  min-height: 48px;
+
+  padding: 0 22px;
+
+  border: 2px solid #ff6b35;
+
+  border-radius: 25px;
+
+  background: white;
+
+  color: #ff6b35;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+
+}
+
+
+.btn-favorito:hover {
+
+  background: #fff0e7;
+
+}
+
+
+.btn-favorito.favoritado {
+
+  background: #ff6b35;
+
+  color: white;
+
+}
+
+
+.btn-voltar-lista {
+
+  min-height: 48px;
+
+  padding: 0 22px;
+
+  border: none;
+
+  border-radius: 25px;
+
+  background: #263238;
+
+  color: white;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+
+}
+
+
+.btn-voltar-lista:hover {
+
+  background: #37474f;
+
+  transform: translateY(-1px);
+
+}
+
+
+/* =========================================================
+   ERRO / RECEITA NÃO ENCONTRADA
+   ========================================================= */
+
+
+.detalhes-erro {
+
+  width: min(600px, calc(100% - 40px));
+
+  min-height: 70vh;
+
+  margin: auto;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+}
+
+
+.erro-icon {
+
+  width: 80px;
+
+  height: 80px;
+
+  border-radius: 50%;
+
+  background: #ffe7d5;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 38px;
+
+  margin-bottom: 20px;
+
+}
+
+
+.detalhes-erro h1 {
+
+  margin: 0 0 10px;
+
+  font-size: 32px;
+
+}
+
+
+.detalhes-erro p {
+
+  margin: 0 0 25px;
+
+  color: #727b80;
+
+}
+
+
+.btn-voltar {
+
+  border: none;
+
+  background: #ff6b35;
+
+  color: white;
+
+  border-radius: 25px;
+
+  padding: 13px 22px;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+
+}
+
+
+.btn-voltar:hover {
+
+  background: #ed5b28;
+
+  transform: translateY(-1px);
+
+}
+
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+
+@media (max-width: 800px) {
+
+  .detalhes-header {
+
+    width: calc(100% - 32px);
+
+  }
+
+
+  .detalhes-container {
+
+    width: calc(100% - 32px);
+
+    margin-top: 25px;
+
+  }
+
+
+  .detalhes-imagem-container {
+
+    height: 330px;
+
+    border-radius: 22px;
+
+  }
+
+
+  .detalhes-info {
+
+    grid-template-columns: 1fr;
+
+  }
+
+
+  .ingredientes-lista {
+
+    grid-template-columns: 1fr;
+
+  }
+
+
+  .detalhes-secao {
+
+    padding: 23px;
+
+  }
+
+}
+
+
+@media (max-width: 550px) {
+
+  .detalhes-header {
+
+    height: 72px;
+
+  }
+
+
+  .detalhes-logo {
+
+    font-size: 19px;
+
+  }
+
+
+  .detalhes-voltar span {
+
+    display: none;
+
+  }
+
+
+  .detalhes-imagem-container {
+
+    height: 250px;
+
+  }
+
+
+  .detalhes-favorito {
+
+    width: 46px;
+
+    height: 46px;
+
+    top: 14px;
+
+    right: 14px;
+
+    font-size: 24px;
+
+  }
+
+
+  .detalhes-titulo {
+
+    font-size: 35px;
+
+    letter-spacing: -1px;
+
+  }
+
+
+  .detalhes-descricao {
+
+    font-size: 15px;
+
+  }
+
+
+  .detalhes-secao {
+
+    margin-top: 25px;
+
+    padding: 20px;
+
+    border-radius: 19px;
+
+  }
+
+
+  .detalhes-secao h2 {
+
+    font-size: 21px;
+
+  }
+
+
+  .detalhes-acoes {
+
+    flex-direction: column;
+
+  }
+
+
+  .btn-favorito,
+  .btn-voltar-lista {
+
+    width: 100%;
+
+  }
+
+}

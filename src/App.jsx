@@ -1,28 +1,61 @@
-import './App.css';
+import {
+  BrowserRouter,
+  Routes,
+  Route
+} from "react-router-dom";
+
+import Home from "./pages/Home";
+import Receitas from "./pages/Receitas";
+import ReceitaDetalhe from "./pages/ReceitaDetalhes";
+import Login from "./pages/Login";
+import Cadastro from "./pages/Cadastro";
+import Favoritos from "./pages/Favoritos";
+import Dicas from "./pages/Dicas";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src="Octocat.png" className="App-logo" alt="logo" />
-        <p>
-          GitHub Codespaces <span className="heart">♥️</span> React
-        </p>
-        <p className="small">
-          Edit <code>src/App.jsx</code> and save to reload.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </p>
-      </header>
-    </div>
+    <BrowserRouter>
+
+      <Routes>
+
+        <Route
+          path="/"
+          element={<Home />}
+        />
+
+        <Route
+          path="/receitas"
+          element={<Receitas />}
+        />
+
+        <Route
+          path="/receita/:id"
+          element={<ReceitaDetalhe />}
+        />
+
+        <Route
+          path="/login"
+          element={<Login />}
+        />
+
+        <Route
+          path="/cadastro"
+          element={<Cadastro />}
+        />
+
+        <Route
+          path="/favoritos"
+          element={<Favoritos />}
+        />
+
+        <Route
+          path="/dicas"
+          element={<Dicas />}
+        />
+
+      </Routes>
+
+    </BrowserRouter>
   );
 }
 

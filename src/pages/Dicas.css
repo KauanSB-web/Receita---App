@@ -1,0 +1,697 @@
+/* ================================
+   PÁGINA DE DICAS
+================================ */
+
+.dicas-page {
+  min-height: 100vh;
+  background: #fffaf5;
+  color: #263238;
+  padding-bottom: 70px;
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.dicas-header {
+  width: min(1180px, calc(100% - 80px));
+  height: 90px;
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+}
+
+.dicas-back,
+.dicas-recipes-button {
+  border: 0;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  border-radius: 25px;
+  padding: 11px 18px;
+
+  transition: 0.2s ease;
+}
+
+.dicas-back {
+  background: white;
+  color: #ff6b35;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.dicas-back:hover {
+  transform: translateX(-2px);
+}
+
+.dicas-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: #ff6b35;
+  font-size: 27px;
+  font-weight: 800;
+}
+
+.dicas-recipes-button {
+  background: #ff6b35;
+  color: white;
+}
+
+.dicas-recipes-button:hover {
+  background: #f25c27;
+  transform: translateY(-1px);
+}
+
+
+/* ================================
+   CONTAINER
+================================ */
+
+.dicas-container {
+  width: min(1180px, calc(100% - 80px));
+  margin: 0 auto;
+}
+
+
+/* ================================
+   HERO
+================================ */
+
+.dicas-hero {
+  margin-top: 20px;
+
+  min-height: 250px;
+
+  background: #ffe9d5;
+
+  border-radius: 28px;
+
+  padding: 45px 55px;
+
+  display: flex;
+  align-items: center;
+  gap: 30px;
+
+  box-sizing: border-box;
+}
+
+.dicas-hero-icon {
+  width: 92px;
+  height: 92px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: white;
+  color: #ff6b35;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.dicas-hero-content {
+  max-width: 700px;
+}
+
+.dicas-label {
+  display: block;
+
+  color: #ff6b35;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+
+  margin-bottom: 10px;
+}
+
+.dicas-hero h1 {
+  margin: 0;
+
+  font-size: 42px;
+  line-height: 1.12;
+
+  color: #263238;
+}
+
+.dicas-hero p {
+  margin: 15px 0 0;
+
+  max-width: 600px;
+
+  font-size: 17px;
+  line-height: 1.6;
+
+  color: #666;
+}
+
+
+/* ================================
+   BUSCA
+================================ */
+
+.dicas-search {
+  height: 58px;
+
+  margin-top: 28px;
+
+  padding: 0 22px;
+
+  background: white;
+
+  border-radius: 30px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.06);
+
+  box-sizing: border-box;
+}
+
+.dicas-search svg {
+  color: #ff6b35;
+  flex-shrink: 0;
+}
+
+.dicas-search input {
+  width: 100%;
+
+  border: 0;
+  outline: none;
+
+  font-size: 16px;
+
+  color: #263238;
+
+  background: transparent;
+}
+
+.dicas-search input::placeholder {
+  color: #999;
+}
+
+
+/* ================================
+   TÍTULO DA SEÇÃO
+================================ */
+
+.dicas-section-title {
+  margin-top: 45px;
+  margin-bottom: 22px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.dicas-section-title > div:first-child span {
+  color: #ff6b35;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  letter-spacing: 1.2px;
+}
+
+.dicas-section-title h2 {
+  margin: 7px 0 0;
+
+  font-size: 29px;
+  line-height: 1.2;
+}
+
+.dicas-total {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: #777;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+
+/* ================================
+   GRID
+================================ */
+
+.dicas-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 25px;
+}
+
+
+/* ================================
+   CARD
+================================ */
+
+.dica-card {
+  background: white;
+
+  border-radius: 24px;
+
+  padding: 27px;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.07);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.dica-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.09);
+}
+
+
+/* ================================
+   TOPO DO CARD
+================================ */
+
+.dica-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+}
+
+.dica-emoji {
+  width: 54px;
+  height: 54px;
+
+  border-radius: 16px;
+
+  background: #fff3e8;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 27px;
+}
+
+.dica-category {
+  padding: 7px 12px;
+
+  border-radius: 20px;
+
+  background: #fff3e8;
+
+  color: #ff6b35;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* ================================
+   TEXTO
+================================ */
+
+.dica-card h3 {
+  margin: 0;
+
+  font-size: 22px;
+  line-height: 1.25;
+
+  color: #263238;
+}
+
+.dica-description {
+  margin: 12px 0 0;
+
+  color: #666;
+
+  font-size: 15px;
+
+  line-height: 1.65;
+}
+
+
+/* ================================
+   TEMPO
+================================ */
+
+.dica-time {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-top: 17px;
+
+  color: #888;
+
+  font-size: 13px;
+}
+
+.dica-time svg {
+  color: #ff6b35;
+}
+
+
+/* ================================
+   PASSOS
+================================ */
+
+.dica-steps {
+  margin-top: 23px;
+
+  padding-top: 20px;
+
+  border-top: 1px solid #eee;
+}
+
+.dica-steps strong {
+  display: block;
+
+  margin-bottom: 13px;
+
+  font-size: 15px;
+  color: #263238;
+}
+
+.dica-step {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 9px;
+
+  margin-bottom: 10px;
+
+  color: #555;
+
+  font-size: 14px;
+
+  line-height: 1.45;
+}
+
+.dica-step:last-child {
+  margin-bottom: 0;
+}
+
+.dica-step svg {
+  flex-shrink: 0;
+
+  margin-top: 1px;
+
+  color: #ff6b35;
+}
+
+
+/* ================================
+   ESTADO VAZIO
+================================ */
+
+.dicas-empty {
+  background: white;
+
+  border-radius: 24px;
+
+  padding: 60px 30px;
+
+  text-align: center;
+
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
+
+.dicas-empty > span {
+  display: block;
+
+  font-size: 45px;
+
+  margin-bottom: 15px;
+}
+
+.dicas-empty h3 {
+  margin: 0;
+
+  font-size: 22px;
+}
+
+.dicas-empty p {
+  color: #777;
+
+  margin: 10px 0 20px;
+}
+
+.dicas-empty button {
+  border: 0;
+
+  background: #ff6b35;
+
+  color: white;
+
+  border-radius: 24px;
+
+  padding: 11px 20px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+}
+
+
+/* ================================
+   CTA FINAL
+================================ */
+
+.dicas-cta {
+  margin-top: 45px;
+
+  background: #263238;
+
+  border-radius: 25px;
+
+  padding: 30px 35px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 20px;
+
+  color: white;
+}
+
+.dicas-cta-icon {
+  width: 60px;
+  height: 60px;
+
+  flex-shrink: 0;
+
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 29px;
+}
+
+.dicas-cta-text {
+  flex: 1;
+}
+
+.dicas-cta-text span {
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.3px;
+
+  color: #ffb18e;
+}
+
+.dicas-cta h2 {
+  margin: 5px 0;
+
+  font-size: 23px;
+}
+
+.dicas-cta p {
+  margin: 0;
+
+  color: #cfd4d6;
+
+  font-size: 14px;
+}
+
+.dicas-cta button {
+  border: 0;
+
+  background: #ff6b35;
+
+  color: white;
+
+  border-radius: 25px;
+
+  padding: 13px 21px;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+.dicas-cta button:hover {
+  background: #f25c27;
+}
+
+
+/* ================================
+   RESPONSIVO
+================================ */
+
+@media (max-width: 900px) {
+
+  .dicas-header,
+  .dicas-container {
+    width: calc(100% - 40px);
+  }
+
+  .dicas-hero {
+    padding: 35px;
+  }
+
+  .dicas-hero h1 {
+    font-size: 36px;
+  }
+
+  .dicas-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .dicas-page {
+    padding-bottom: 40px;
+  }
+
+  .dicas-header,
+  .dicas-container {
+    width: calc(100% - 30px);
+  }
+
+  .dicas-header {
+    height: 75px;
+    gap: 10px;
+  }
+
+  .dicas-brand {
+    font-size: 21px;
+  }
+
+  .dicas-brand svg {
+    width: 23px;
+  }
+
+  .dicas-back,
+  .dicas-recipes-button {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .dicas-back svg {
+    width: 17px;
+  }
+
+  .dicas-hero {
+    margin-top: 10px;
+
+    padding: 30px 22px;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 20px;
+
+    border-radius: 22px;
+  }
+
+  .dicas-hero-icon {
+    width: 68px;
+    height: 68px;
+  }
+
+  .dicas-hero-icon svg {
+    width: 32px;
+  }
+
+  .dicas-hero h1 {
+    font-size: 30px;
+  }
+
+  .dicas-hero p {
+    font-size: 15px;
+  }
+
+  .dicas-section-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dicas-section-title h2 {
+    font-size: 25px;
+  }
+
+  .dica-card {
+    padding: 22px;
+  }
+
+  .dica-card h3 {
+    font-size: 20px;
+  }
+
+  .dicas-cta {
+    padding: 25px;
+
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .dicas-cta button {
+    width: 100%;
+  }
+
+}
