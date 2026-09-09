@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Image,
   SafeAreaView,
@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { onAuthStateChanged, User } from 'firebase/auth';
+
+import { auth } from '../../firebase';
 import receitas from '../../data/receitas';
 
 const categorias = [
@@ -26,9 +29,23 @@ const categorias = [
 export default function HomeScreen() {
   const router = useRouter();
 
+  const [usuario, setUsuario] = useState<User | null>(null);
   const [busca, setBusca] = useState('');
   const [categoriaSelecionada, setCategoriaSelecionada] =
     useState('Todas');
+
+  useEffect(() => {
+    const cancelarObservacao = onAuthStateChanged(auth, (user) => {
+      setUsuario(user);
+    });
+
+    return cancelarObservacao;
+  }, []);
+
+  const nomeUsuario =
+    usuario?.displayName?.trim() ||
+    usuario?.email?.split('@')[0] ||
+    '';
 
   const receitasFiltradas = useMemo(() => {
     const texto = busca.trim().toLowerCase();
@@ -83,7 +100,10 @@ export default function HomeScreen() {
           {/* SAUDAÇÃO */}
           <View style={styles.saudacao}>
             <Text style={styles.ola}>
-              Olá! <Text style={styles.mao}>👋</Text>
+              {nomeUsuario
+                ? `Olá, ${nomeUsuario}!`
+                : 'Olá!'}{' '}
+              <Text style={styles.mao}>👋</Text>
             </Text>
 
             <Text style={styles.titulo}>
@@ -132,10 +152,8 @@ export default function HomeScreen() {
             <Text style={styles.secaoTitulo}>Categorias</Text>
 
             <TouchableOpacity
-              onPress={() => {
-                setCategoriaSelecionada('Todas');
-                setBusca('');
-              }}
+              onPress={() => router.push('/(tabs)/explore')}
+              activeOpacity={0.7}
             >
               <Text style={styles.verTodas}>Ver todas</Text>
             </TouchableOpacity>

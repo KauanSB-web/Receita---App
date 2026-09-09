@@ -10,9 +10,20 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import receitas from '../data/receitas';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
-const FAVORITOS_KEY = '@receitai_favoritos';
+import receitas from '../data/receitas';
+import { auth } from '../firebase';
+
+const FAVORITOS_VISITANTE_KEY = '@receitai_favoritos_visitante';
+
+function obterChaveFavoritos(usuario: User | null): string {
+  if (usuario?.uid) {
+    return `@receitai_favoritos_${usuario.uid}`;
+  }
+
+  return FAVORITOS_VISITANTE_KEY;
+}
 
 export default function ReceitaDetalhesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,63 +33,113 @@ export default function ReceitaDetalhesScreen() {
     (item) => String(item.id) === String(id)
   );
 
+  const [usuario, setUsuario] = useState<User | null>(
+    auth.currentUser
+  );
+
   const [favorita, setFavorita] = useState(false);
   const [carregandoFavorito, setCarregandoFavorito] = useState(true);
 
+  /*
+   * OBSERVA A CONTA ATUAL
+   *
+   * Quando o usuário entra ou sai da conta,
+   * a tela atualiza automaticamente.
+   */
+  useEffect(() => {
+    const cancelarObservacao = onAuthStateChanged(
+      auth,
+      (user) => {
+        setUsuario(user);
+      }
+    );
+
+    return cancelarObservacao;
+  }, []);
+
+  /*
+   * CARREGA O FAVORITO DA CONTA ATUAL
+   */
   useEffect(() => {
     const carregarFavorito = async () => {
+      setCarregandoFavorito(true);
+
       try {
-        const dados = await AsyncStorage.getItem(FAVORITOS_KEY);
+        if (!receita) {
+          setFavorita(false);
+          return;
+        }
+
+        const chaveFavoritos =
+          obterChaveFavoritos(usuario);
+
+        const dados = await AsyncStorage.getItem(
+          chaveFavoritos
+        );
 
         const favoritos: number[] = dados
           ? JSON.parse(dados)
           : [];
 
         setFavorita(
-          favoritos.includes(Number(receita?.id))
+          favoritos.includes(Number(receita.id))
         );
       } catch (error) {
-        console.log('Erro ao carregar favorito:', error);
+        console.log(
+          'Erro ao carregar favorito:',
+          error
+        );
+
+        setFavorita(false);
       } finally {
         setCarregandoFavorito(false);
       }
     };
 
-    if (receita) {
-      carregarFavorito();
-    } else {
-      setCarregandoFavorito(false);
-    }
-  }, [receita?.id]);
+    carregarFavorito();
+  }, [receita?.id, usuario?.uid]);
 
+  /*
+   * ADICIONAR / REMOVER FAVORITO
+   */
   const alternarFavorito = async () => {
     if (!receita) return;
 
     try {
-      const dados = await AsyncStorage.getItem(FAVORITOS_KEY);
+      const chaveFavoritos =
+        obterChaveFavoritos(usuario);
+
+      const dados = await AsyncStorage.getItem(
+        chaveFavoritos
+      );
 
       let favoritos: number[] = dados
         ? JSON.parse(dados)
         : [];
 
+      const idReceita = Number(receita.id);
+
       if (favorita) {
         favoritos = favoritos.filter(
-          (item) => item !== Number(receita.id)
+          (item) => item !== idReceita
         );
       } else {
-        if (!favoritos.includes(Number(receita.id))) {
-          favoritos.push(Number(receita.id));
+        if (!favoritos.includes(idReceita)) {
+          favoritos.push(idReceita);
         }
       }
 
       await AsyncStorage.setItem(
-        FAVORITOS_KEY,
+        chaveFavoritos,
         JSON.stringify(favoritos)
       );
 
       setFavorita(!favorita);
     } catch (error) {
-      console.log('Erro ao salvar favorito:', error);
+      console.log(
+        'Erro ao salvar favorito:',
+        error
+      );
     }
   };
 

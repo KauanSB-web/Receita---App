@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -20,16 +22,19 @@ export default function LoginScreen() {
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
+  const [entrando, setEntrando] = useState(false);
 
-  const entrar = () => {
+  const entrar = async () => {
     setErro('');
 
-    if (!email.trim() || !senha.trim()) {
+    const emailLimpo = email.trim().toLowerCase();
+
+    if (!emailLimpo || !senha.trim()) {
       setErro('Preencha o e-mail e a senha.');
       return;
     }
 
-    if (!email.includes('@')) {
+    if (!emailLimpo.includes('@')) {
       setErro('Digite um e-mail válido.');
       return;
     }
@@ -39,7 +44,56 @@ export default function LoginScreen() {
       return;
     }
 
-    router.replace('/(tabs)');
+    try {
+      setEntrando(true);
+
+      await signInWithEmailAndPassword(
+        auth,
+        emailLimpo,
+        senha
+      );
+
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      console.log('Erro ao entrar:', error);
+
+      switch (error?.code) {
+        case 'auth/invalid-credential':
+          setErro('E-mail ou senha incorretos.');
+          break;
+
+        case 'auth/user-not-found':
+          setErro('Não encontramos uma conta com este e-mail.');
+          break;
+
+        case 'auth/wrong-password':
+          setErro('Senha incorreta.');
+          break;
+
+        case 'auth/invalid-email':
+          setErro('Digite um e-mail válido.');
+          break;
+
+        case 'auth/too-many-requests':
+          setErro(
+            'Muitas tentativas. Aguarde um pouco e tente novamente.'
+          );
+          break;
+
+        case 'auth/network-request-failed':
+          setErro(
+            'Não foi possível conectar ao Firebase. Verifique sua internet.'
+          );
+          break;
+
+        default:
+          setErro(
+            'Não foi possível entrar. Tente novamente.'
+          );
+      }
+    } finally {
+      setEntrando(false);
+    }
   };
 
   return (
@@ -113,6 +167,7 @@ export default function LoginScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  editable={!entrando}
                 />
               </View>
             </View>
@@ -121,7 +176,10 @@ export default function LoginScreen() {
               <View style={styles.senhaTopo}>
                 <Text style={styles.label}>Senha</Text>
 
-                <TouchableOpacity activeOpacity={0.7}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  disabled={entrando}
+                >
                   <Text style={styles.esqueceu}>
                     Esqueceu a senha?
                   </Text>
@@ -144,6 +202,7 @@ export default function LoginScreen() {
                   secureTextEntry={!mostrarSenha}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  editable={!entrando}
                 />
 
                 <TouchableOpacity
@@ -151,6 +210,7 @@ export default function LoginScreen() {
                     setMostrarSenha(!mostrarSenha)
                   }
                   activeOpacity={0.7}
+                  disabled={entrando}
                 >
                   <Ionicons
                     name={
@@ -180,19 +240,25 @@ export default function LoginScreen() {
             ) : null}
 
             <TouchableOpacity
-              style={styles.botaoEntrar}
+              style={[
+                styles.botaoEntrar,
+                entrando && styles.botaoDesativado,
+              ]}
               onPress={entrar}
               activeOpacity={0.85}
+              disabled={entrando}
             >
               <Text style={styles.botaoTexto}>
-                Entrar
+                {entrando ? 'Entrando...' : 'Entrar'}
               </Text>
 
-              <Ionicons
-                name="arrow-forward"
-                size={21}
-                color="#FFFFFF"
-              />
+              {!entrando ? (
+                <Ionicons
+                  name="arrow-forward"
+                  size={21}
+                  color="#FFFFFF"
+                />
+              ) : null}
             </TouchableOpacity>
 
             <View style={styles.divisor}>
@@ -209,6 +275,7 @@ export default function LoginScreen() {
               <TouchableOpacity
                 onPress={() => router.push('/cadastro')}
                 activeOpacity={0.7}
+                disabled={entrando}
               >
                 <Text style={styles.cadastroLink}>
                   Criar conta
@@ -218,14 +285,8 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.rodape}>
-            <Ionicons
-              name="heart"
-              size={14}
-              color="#E76518"
-            />
-
             <Text style={styles.rodapeTexto}>
-              Feito para quem ama cozinhar
+              Sua conta é protegida pelo Firebase
             </Text>
           </View>
         </ScrollView>
@@ -246,18 +307,19 @@ const styles = StyleSheet.create({
 
   scroll: {
     flexGrow: 1,
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
     paddingBottom: 30,
   },
 
   topo: {
-    paddingTop: 10,
+    height: 65,
+    justifyContent: 'center',
   },
 
   voltar: {
-    width: 45,
-    height: 45,
-    borderRadius: 23,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
@@ -267,12 +329,13 @@ const styles = StyleSheet.create({
 
   logoArea: {
     alignItems: 'center',
-    marginTop: 25,
+    marginTop: 5,
+    marginBottom: 34,
   },
 
   logoIcone: {
-    width: 67,
-    height: 67,
+    width: 66,
+    height: 66,
     borderRadius: 22,
     backgroundColor: '#E76518',
     alignItems: 'center',
@@ -282,9 +345,8 @@ const styles = StyleSheet.create({
 
   logo: {
     color: '#292929',
-    fontSize: 34,
+    fontSize: 38,
     fontWeight: '900',
-    letterSpacing: -1,
   },
 
   logoLaranja: {
@@ -294,41 +356,43 @@ const styles = StyleSheet.create({
   logoSubtitulo: {
     color: '#999',
     fontSize: 13,
-    marginTop: 3,
+    marginTop: 4,
   },
 
   formulario: {
-    marginTop: 38,
+    width: '100%',
   },
 
   titulo: {
     color: '#292929',
-    fontSize: 27,
+    fontSize: 30,
     fontWeight: '900',
+    lineHeight: 36,
   },
 
   descricao: {
-    color: '#888',
-    fontSize: 15,
-    marginTop: 7,
+    color: '#858585',
+    fontSize: 16,
+    lineHeight: 23,
+    marginTop: 8,
     marginBottom: 28,
   },
 
   campoArea: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
 
   label: {
     color: '#292929',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
     marginBottom: 8,
   },
 
   senhaTopo: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
 
   esqueceu: {
@@ -338,33 +402,33 @@ const styles = StyleSheet.create({
   },
 
   inputContainer: {
-    minHeight: 56,
+    minHeight: 58,
+    borderRadius: 16,
     backgroundColor: '#FFFFFF',
-    borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#E5DDD6',
-    paddingHorizontal: 16,
+    borderColor: '#E7DED7',
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
   },
 
   input: {
     flex: 1,
     color: '#292929',
-    fontSize: 15,
+    fontSize: 16,
     marginLeft: 11,
-    paddingVertical: 2,
+    paddingVertical: 10,
   },
 
   erro: {
-    minHeight: 46,
-    borderRadius: 13,
-    backgroundColor: '#FFF0ED',
+    minHeight: 48,
+    borderRadius: 14,
+    backgroundColor: '#FFF0EC',
     borderWidth: 1,
-    borderColor: '#F2C8C0',
-    paddingHorizontal: 13,
+    borderColor: '#F3C9BF',
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 13,
     marginBottom: 16,
   },
 
@@ -372,37 +436,42 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#D94B32',
     fontSize: 13,
+    fontWeight: '600',
     marginLeft: 8,
     lineHeight: 18,
   },
 
   botaoEntrar: {
-    height: 56,
-    borderRadius: 16,
+    minHeight: 58,
+    borderRadius: 29,
     backgroundColor: '#E76518',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 9,
-    marginTop: 3,
+    paddingHorizontal: 22,
+    gap: 10,
+  },
+
+  botaoDesativado: {
+    opacity: 0.65,
   },
 
   botaoTexto: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
+    fontSize: 17,
+    fontWeight: '900',
   },
 
   divisor: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 27,
+    marginVertical: 25,
   },
 
   linha: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E5DDD6',
+    backgroundColor: '#E7DED7',
   },
 
   ou: {
@@ -416,28 +485,25 @@ const styles = StyleSheet.create({
   },
 
   cadastroTexto: {
-    color: '#888',
+    color: '#777',
     fontSize: 14,
   },
 
   cadastroLink: {
     color: '#E76518',
     fontSize: 15,
-    fontWeight: '800',
-    marginTop: 6,
+    fontWeight: '900',
+    marginTop: 7,
   },
 
   rodape: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 'auto',
-    paddingTop: 35,
-    gap: 5,
+    paddingTop: 30,
+    alignItems: 'center',
   },
 
   rodapeTexto: {
     color: '#AAAAAA',
-    fontSize: 12,
+    fontSize: 11,
   },
 });
