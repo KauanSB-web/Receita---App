@@ -9,12 +9,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 import { auth } from '../../firebase';
 import receitas from '../../data/receitas';
+
+const AVATAR_KEY_PREFIX = '@receitai_avatar_';
+const AVATAR_VISITANTE_KEY = '@receitai_avatar_visitante';
 
 const categorias = [
   { nome: 'Todas', emoji: '✨' },
@@ -26,13 +30,30 @@ const categorias = [
   { nome: 'Café da manhã', emoji: '☕' },
 ];
 
+function obterChaveAvatar(usuario: User | null): string {
+  if (usuario?.uid) {
+    return `${AVATAR_KEY_PREFIX}${usuario.uid}`;
+  }
+
+  return AVATAR_VISITANTE_KEY;
+}
+
+function avatarEhImagem(avatarAtual: string): boolean {
+  return (
+    avatarAtual.startsWith('file://') ||
+    avatarAtual.startsWith('content://') ||
+    avatarAtual.startsWith('ph://') ||
+    avatarAtual.startsWith('assets-library://')
+  );
+}
+
 export default function HomeScreen() {
   const router = useRouter();
 
   const [usuario, setUsuario] = useState<User | null>(null);
   const [busca, setBusca] = useState('');
-  const [categoriaSelecionada, setCategoriaSelecionada] =
-    useState('Todas');
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState('Todas');
+  const [avatar, setAvatar] = useState('👨‍🍳');
 
   useEffect(() => {
     const cancelarObservacao = onAuthStateChanged(auth, (user) => {
@@ -41,6 +62,38 @@ export default function HomeScreen() {
 
     return cancelarObservacao;
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let ativo = true;
+
+      async function carregarAvatar() {
+        try {
+          const salvo = await AsyncStorage.getItem(
+            obterChaveAvatar(usuario)
+          );
+
+          if (!ativo) {
+            return;
+          }
+
+          if (salvo) {
+            setAvatar(salvo);
+          } else {
+            setAvatar('👨‍🍳');
+          }
+        } catch (erro) {
+          console.log('Erro ao carregar avatar:', erro);
+        }
+      }
+
+      carregarAvatar();
+
+      return () => {
+        ativo = false;
+      };
+    }, [usuario?.uid])
+  );
 
   const nomeUsuario =
     usuario?.displayName?.trim() ||
@@ -51,212 +104,186 @@ export default function HomeScreen() {
     const texto = busca.trim().toLowerCase();
 
     return receitas.filter((receita) => {
-      const combinaCategoria =
+      const pertenceCategoria =
         categoriaSelecionada === 'Todas' ||
         receita.categoria === categoriaSelecionada;
 
-      const combinaBusca =
+      const correspondeBusca =
         texto.length === 0 ||
         receita.nome.toLowerCase().includes(texto) ||
         receita.categoria.toLowerCase().includes(texto);
 
-      return combinaCategoria && combinaBusca;
+      return pertenceCategoria && correspondeBusca;
     });
   }, [busca, categoriaSelecionada]);
 
+  const receitasDestaque = receitasFiltradas.slice(0, 6);
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* CABEÇALHO */}
-          <View style={styles.header}>
-            <View>
-              <View style={styles.logoLinha}>
-                <Text style={styles.logo}>Receitaí</Text>
-                <Text style={styles.talheres}>🍴</Text>
-              </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.conteudo}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <View style={styles.logoArea}>
+            <Text style={styles.logo}>Receitaí</Text>
+            <Text style={styles.talheres}>🍴</Text>
+          </View>
 
-              <Text style={styles.headerSubtitulo}>
-                Receitas feitas para você
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              style={styles.perfil}
-              onPress={() => router.push('/modal')}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="person-outline"
-                size={34}
-                color="#E76518"
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => router.push('/modal')}
+            activeOpacity={0.8}
+          >
+            {avatarEhImagem(avatar) ? (
+              <Image
+                source={{ uri: avatar }}
+                style={styles.avatarImagem}
               />
-            </TouchableOpacity>
-          </View>
-
-          {/* SAUDAÇÃO */}
-          <View style={styles.saudacao}>
-            <Text style={styles.ola}>
-              {nomeUsuario
-                ? `Olá, ${nomeUsuario}!`
-                : 'Olá!'}{' '}
-              <Text style={styles.mao}>👋</Text>
-            </Text>
-
-            <Text style={styles.titulo}>
-              O que vamos{'\n'}cozinhar hoje?
-            </Text>
-
-            <Text style={styles.subtitulo}>
-              Encontre receitas deliciosas e{'\n'}
-              fáceis de preparar.
-            </Text>
-          </View>
-
-          {/* BUSCA */}
-          <View style={styles.buscaContainer}>
-            <Ionicons
-              name="search-outline"
-              size={32}
-              color="#999"
-            />
-
-            <TextInput
-              value={busca}
-              onChangeText={setBusca}
-              placeholder="Buscar receitas..."
-              placeholderTextColor="#999"
-              style={styles.input}
-              returnKeyType="search"
-            />
-
-            {busca.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setBusca('')}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name="close-circle"
-                  size={24}
-                  color="#999"
-                />
-              </TouchableOpacity>
+            ) : (
+              <Text style={styles.avatarTexto}>
+                {avatar}
+              </Text>
             )}
-          </View>
+          </TouchableOpacity>
+        </View>
 
-          {/* CATEGORIAS */}
-          <View style={styles.secaoCabecalho}>
-            <Text style={styles.secaoTitulo}>Categorias</Text>
+        <Text style={styles.headerSubtitulo}>
+          Receitas para todos os momentos
+        </Text>
 
+        <Text style={styles.ola}>
+          {nomeUsuario ? `Olá, ${nomeUsuario}!` : 'Olá!'}{' '}
+          <Text style={styles.mao}>👋</Text>
+        </Text>
+
+        <Text style={styles.titulo}>
+          O que vamos cozinhar hoje?
+        </Text>
+
+        <Text style={styles.subtitulo}>
+          Encontre receitas deliciosas e fáceis de preparar.
+        </Text>
+
+        <View style={styles.buscaContainer}>
+          <Ionicons
+            name="search-outline"
+            size={23}
+            color="#777777"
+          />
+
+          <TextInput
+            style={styles.inputBusca}
+            placeholder="Buscar uma receita..."
+            placeholderTextColor="#999999"
+            value={busca}
+            onChangeText={setBusca}
+            returnKeyType="search"
+          />
+
+          {busca.length > 0 && (
             <TouchableOpacity
-              onPress={() => router.push('/(tabs)/explore')}
+              onPress={() => setBusca('')}
               activeOpacity={0.7}
             >
-              <Text style={styles.verTodas}>Ver todas</Text>
+              <Ionicons
+                name="close-circle"
+                size={21}
+                color="#AAAAAA"
+              />
             </TouchableOpacity>
+          )}
+        </View>
+
+        <View style={styles.tituloSecaoLinha}>
+          <Text style={styles.tituloSecao}>Categorias</Text>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriasContainer}
+        >
+          {categorias.map((categoria) => {
+            const selecionada =
+              categoria.nome === categoriaSelecionada;
+
+            return (
+              <TouchableOpacity
+                key={categoria.nome}
+                style={[
+                  styles.categoria,
+                  selecionada && styles.categoriaSelecionada,
+                ]}
+                onPress={() =>
+                  setCategoriaSelecionada(categoria.nome)
+                }
+                activeOpacity={0.8}
+              >
+                <Text style={styles.categoriaEmoji}>
+                  {categoria.emoji}
+                </Text>
+
+                <Text
+                  style={[
+                    styles.categoriaTexto,
+                    selecionada &&
+                      styles.categoriaTextoSelecionada,
+                  ]}
+                >
+                  {categoria.nome}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        <View style={styles.dicaCard}>
+          <View style={styles.dicaIconContainer}>
+            <Text style={styles.dicaIcon}>💡</Text>
           </View>
 
+          <View style={styles.dicaTextoContainer}>
+            <Text style={styles.dicaTitulo}>Dica do dia</Text>
+
+            <Text style={styles.dicaTexto}>
+              Organize todos os ingredientes antes de começar a
+              cozinhar. Isso deixa o preparo muito mais fácil!
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.secaoHeader}>
+          <Text style={styles.tituloSecao}>
+            Receitas em destaque
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => router.push('/(tabs)/explore')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.verTodas}>Ver todas</Text>
+          </TouchableOpacity>
+        </View>
+
+        {receitasDestaque.length > 0 ? (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categorias}
+            contentContainerStyle={styles.receitasContainer}
           >
-            {categorias.map((categoria) => {
-              const selecionada =
-                categoriaSelecionada === categoria.nome;
-
-              return (
-                <TouchableOpacity
-                  key={categoria.nome}
-                  style={[
-                    styles.categoriaCard,
-                    selecionada && styles.categoriaSelecionada,
-                  ]}
-                  onPress={() =>
-                    setCategoriaSelecionada(categoria.nome)
-                  }
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.categoriaEmoji}>
-                    {categoria.emoji}
-                  </Text>
-
-                  <Text
-                    style={[
-                      styles.categoriaNome,
-                      selecionada &&
-                        styles.categoriaNomeSelecionada,
-                    ]}
-                  >
-                    {categoria.nome}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-
-          {/* RECEITAS */}
-          <View style={styles.receitasCabecalho}>
-            <View>
-              <Text style={styles.secaoTitulo}>
-                Receitas para você
-              </Text>
-
-              <Text style={styles.contador}>
-                {receitasFiltradas.length}{' '}
-                {receitasFiltradas.length === 1
-                  ? 'receita encontrada'
-                  : 'receitas encontradas'}
-              </Text>
-            </View>
-          </View>
-
-          {receitasFiltradas.length === 0 ? (
-            <View style={styles.semResultado}>
-              <Text style={styles.semResultadoEmoji}>🔎</Text>
-
-              <Text style={styles.semResultadoTitulo}>
-                Nenhuma receita encontrada
-              </Text>
-
-              <Text style={styles.semResultadoTexto}>
-                Tente buscar outro prato ou categoria.
-              </Text>
-
-              <TouchableOpacity
-                style={styles.limparBusca}
-                onPress={() => {
-                  setBusca('');
-                  setCategoriaSelecionada('Todas');
-                }}
-              >
-                <Text style={styles.limparBuscaTexto}>
-                  Limpar filtros
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            receitasFiltradas.map((receita) => (
+            {receitasDestaque.map((receita) => (
               <TouchableOpacity
                 key={receita.id}
                 style={styles.receitaCard}
-                onPress={() =>
-                  router.push({
-                    pathname: '/[id]',
-                    params: {
-                      id: String(receita.id),
-                    },
-                  })
-                }
+                onPress={() => router.push(`/${receita.id}`)}
                 activeOpacity={0.85}
               >
                 <Image
-                  source={{ uri: receita.imagem }}
+                  source={receita.imagem}
                   style={styles.receitaImagem}
-                  resizeMode="cover"
                 />
 
                 <View style={styles.receitaInfo}>
@@ -267,41 +294,60 @@ export default function HomeScreen() {
                     {receita.nome}
                   </Text>
 
-                  <Text style={styles.receitaCategoria}>
-                    {receita.categoria}
-                  </Text>
+                  <View style={styles.receitaDetalhes}>
+                    <View style={styles.detalheItem}>
+                      <Ionicons
+                        name="time-outline"
+                        size={15}
+                        color="#777777"
+                      />
 
-                  <View style={styles.tempo}>
-                    <Ionicons
-                      name="time-outline"
-                      size={17}
-                      color="#888"
-                    />
+                      <Text style={styles.detalheTexto}>
+                        {receita.tempo}
+                      </Text>
+                    </View>
 
-                    <Text style={styles.tempoTexto}>
-                      {receita.tempo}
-                    </Text>
-
-                    <Text style={styles.separador}>•</Text>
+                    <Text style={styles.ponto}>•</Text>
 
                     <Text style={styles.dificuldade}>
                       {receita.dificuldade}
                     </Text>
                   </View>
                 </View>
-
-                <Ionicons
-                  name="chevron-forward"
-                  size={24}
-                  color="#C8C8C8"
-                />
               </TouchableOpacity>
-            ))
-          )}
+            ))}
+          </ScrollView>
+        ) : (
+          <View style={styles.semResultados}>
+            <Text style={styles.semResultadosEmoji}>🍽️</Text>
 
-          <View style={{ height: 30 }} />
-        </ScrollView>
-      </View>
+            <Text style={styles.semResultadosTitulo}>
+              Nenhuma receita encontrada
+            </Text>
+
+            <Text style={styles.semResultadosTexto}>
+              Tente pesquisar por outro nome ou escolher outra
+              categoria.
+            </Text>
+          </View>
+        )}
+
+        <TouchableOpacity
+          style={styles.botaoExplorar}
+          onPress={() => router.push('/(tabs)/explore')}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.botaoExplorarTexto}>
+            Explorar todas as receitas
+          </Text>
+
+          <Ionicons
+            name="arrow-forward"
+            size={20}
+            color="#FFFFFF"
+          />
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -309,273 +355,320 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFF9F1',
+    backgroundColor: '#FFFDF9',
   },
 
   container: {
     flex: 1,
-    backgroundColor: '#FFF9F1',
   },
 
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
-    paddingBottom: 90,
+  conteudo: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 110,
   },
 
   header: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 38,
   },
 
-  logoLinha: {
+  logoArea: {
     flexDirection: 'row',
     alignItems: 'center',
   },
 
   logo: {
-    fontSize: 42,
+    fontSize: 36,
     fontWeight: '800',
-    color: '#E76518',
+    color: '#F45D01',
     letterSpacing: -1,
   },
 
   talheres: {
-    fontSize: 32,
-    marginLeft: 12,
+    fontSize: 28,
+    marginLeft: 8,
   },
 
   headerSubtitulo: {
-    fontSize: 19,
-    color: '#777',
-    marginTop: 4,
+    fontSize: 17,
+    color: '#777777',
+    marginTop: 2,
   },
 
-  perfil: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    borderWidth: 1.5,
-    borderColor: '#E9D5C2',
-    backgroundColor: '#FFF4E8',
+  profileButton: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: '#FFF1E8',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
 
-  saudacao: {
-    marginBottom: 30,
+  avatarImagem: {
+    width: '100%',
+    height: '100%',
+  },
+
+  avatarTexto: {
+    fontSize: 32,
   },
 
   ola: {
-    fontSize: 52,
-    lineHeight: 58,
+    fontSize: 34,
+    lineHeight: 40,
     fontWeight: '800',
-    color: '#171717',
-    marginBottom: 10,
+    color: '#252525',
+    marginTop: 30,
   },
 
   mao: {
-    fontSize: 48,
+    fontSize: 32,
   },
 
   titulo: {
-    fontSize: 43,
-    lineHeight: 48,
+    fontSize: 30,
+    lineHeight: 35,
     fontWeight: '800',
-    color: '#171717',
-    letterSpacing: -1,
+    color: '#252525',
+    marginTop: 8,
   },
 
   subtitulo: {
-    fontSize: 25,
-    lineHeight: 34,
-    color: '#777',
-    marginTop: 24,
+    fontSize: 18,
+    lineHeight: 25,
+    color: '#777777',
+    marginTop: 14,
+    marginBottom: 22,
   },
 
   buscaContainer: {
-    height: 86,
-    borderRadius: 28,
-    backgroundColor: '#F1F1F1',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 25,
-    marginBottom: 42,
-  },
-
-  input: {
-    flex: 1,
-    fontSize: 25,
-    color: '#333',
-    marginLeft: 15,
-  },
-
-  secaoCabecalho: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-
-  secaoTitulo: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#171717',
-  },
-
-  verTodas: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: '#D85C14',
-  },
-
-  categorias: {
-    paddingBottom: 12,
-    gap: 14,
-  },
-
-  categoriaCard: {
-    width: 155,
-    height: 150,
-    borderRadius: 28,
+    height: 58,
+    borderRadius: 20,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E7E7E7',
+    borderColor: '#EEEEEE',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    marginBottom: 30,
+  },
+
+  inputBusca: {
+    flex: 1,
+    fontSize: 17,
+    color: '#252525',
+    marginLeft: 11,
+    height: '100%',
+  },
+
+  tituloSecaoLinha: {
+    marginBottom: 15,
+  },
+
+  tituloSecao: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#252525',
+  },
+
+  categoriasContainer: {
+    paddingBottom: 8,
+    paddingRight: 10,
+  },
+
+  categoria: {
+    minWidth: 86,
+    height: 88,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 2,
+    paddingHorizontal: 10,
+    marginRight: 10,
   },
 
   categoriaSelecionada: {
-    backgroundColor: '#F65D00',
-    borderColor: '#F65D00',
+    backgroundColor: '#FFF0E6',
+    borderColor: '#F45D01',
   },
 
   categoriaEmoji: {
-    fontSize: 48,
-    marginBottom: 14,
+    fontSize: 28,
+    marginBottom: 5,
   },
 
-  categoriaNome: {
-    fontSize: 20,
+  categoriaTexto: {
+    fontSize: 12,
     fontWeight: '700',
-    color: '#5B5B5B',
+    color: '#666666',
     textAlign: 'center',
   },
 
-  categoriaNomeSelecionada: {
-    color: '#FFFFFF',
+  categoriaTextoSelecionada: {
+    color: '#F45D01',
   },
 
-  receitasCabecalho: {
-    marginTop: 32,
-    marginBottom: 18,
+  dicaCard: {
+    backgroundColor: '#FFF0E6',
+    borderRadius: 22,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 30,
   },
 
-  contador: {
+  dicaIconContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+
+  dicaIcon: {
+    fontSize: 27,
+  },
+
+  dicaTextoContainer: {
+    flex: 1,
+  },
+
+  dicaTitulo: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#F45D01',
+    marginBottom: 5,
+  },
+
+  dicaTexto: {
     fontSize: 14,
-    color: '#999',
-    marginTop: 4,
+    lineHeight: 20,
+    color: '#555555',
+  },
+
+  secaoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+
+  verTodas: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#F45D01',
+  },
+
+  receitasContainer: {
+    paddingRight: 10,
   },
 
   receitaCard: {
-    minHeight: 105,
+    width: 245,
     backgroundColor: '#FFFFFF',
     borderRadius: 22,
-    marginBottom: 14,
-    padding: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E9E9E9',
+    borderColor: '#EEEEEE',
+    marginRight: 14,
   },
 
   receitaImagem: {
-    width: 82,
-    height: 82,
-    borderRadius: 18,
-    backgroundColor: '#FFF0E4',
+    width: '100%',
+    height: 165,
   },
 
   receitaInfo: {
-    flex: 1,
-    marginLeft: 15,
-    marginRight: 8,
+    padding: 14,
   },
 
   receitaNome: {
     fontSize: 18,
+    lineHeight: 23,
     fontWeight: '800',
-    color: '#222',
+    color: '#252525',
   },
 
-  receitaCategoria: {
-    fontSize: 14,
-    color: '#E76518',
-    fontWeight: '600',
-    marginTop: 4,
-  },
-
-  tempo: {
+  receitaDetalhes: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+    marginTop: 10,
   },
 
-  tempoTexto: {
-    color: '#888',
-    fontSize: 13,
-    marginLeft: 5,
+  detalheItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
-  separador: {
-    color: '#BBBBBB',
+  detalheTexto: {
     fontSize: 13,
-    marginHorizontal: 6,
+    color: '#777777',
+    marginLeft: 4,
+  },
+
+  ponto: {
+    fontSize: 13,
+    color: '#999999',
+    marginHorizontal: 7,
   },
 
   dificuldade: {
-    color: '#888',
     fontSize: 13,
+    color: '#777777',
+    fontWeight: '600',
   },
 
-  semResultado: {
+  semResultados: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
+    padding: 28,
     alignItems: 'center',
-    paddingVertical: 40,
   },
 
-  semResultadoEmoji: {
-    fontSize: 45,
+  semResultadosEmoji: {
+    fontSize: 40,
+    marginBottom: 10,
   },
 
-  semResultadoTitulo: {
-    fontSize: 20,
+  semResultadosTitulo: {
+    fontSize: 18,
     fontWeight: '800',
-    color: '#333',
-    marginTop: 12,
+    color: '#252525',
     textAlign: 'center',
   },
 
-  semResultadoTexto: {
-    fontSize: 15,
-    color: '#888',
-    marginTop: 6,
+  semResultadosTexto: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#777777',
     textAlign: 'center',
+    marginTop: 7,
   },
 
-  limparBusca: {
-    marginTop: 20,
-    backgroundColor: '#F65D00',
-    paddingHorizontal: 22,
-    paddingVertical: 12,
+  botaoExplorar: {
+    height: 56,
     borderRadius: 18,
+    backgroundColor: '#F45D01',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 28,
+    gap: 10,
   },
 
-  limparBuscaTexto: {
+  botaoExplorarTexto: {
     color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
   },
 });

@@ -6,7 +6,7 @@ const receitas = [
     tempo: "40 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/arroz-frango.jpg"),
     ingredientes: [
       "2 xícaras de arroz",
       "500 g de peito de frango",
@@ -28,7 +28,7 @@ const receitas = [
     tempo: "30 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/macarrao-tomate.jpg"),
     ingredientes: [
       "500 g de macarrão",
       "400 g de molho de tomate",
@@ -49,7 +49,7 @@ const receitas = [
     tempo: "45 min",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/panqueca-carne.png"),
     ingredientes: [
       "1 xícara de farinha de trigo",
       "1 xícara de leite",
@@ -70,7 +70,7 @@ const receitas = [
     tempo: "50 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/bolo-chocolate.jpg"),
     ingredientes: [
       "2 xícaras de farinha de trigo",
       "1 xícara de chocolate em pó",
@@ -91,7 +91,7 @@ const receitas = [
     tempo: "1h",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/pizza-caseira.jpg"),
     ingredientes: [
       "500 g de farinha de trigo",
       "10 g de fermento biológico seco",
@@ -113,7 +113,7 @@ const receitas = [
     tempo: "35 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/hamburguer-artesanal.jpg"),
     ingredientes: [
       "500 g de carne moída",
       "4 pães de hambúrguer",
@@ -134,7 +134,7 @@ const receitas = [
     tempo: "15 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/salada-tropical.jpg"),
     ingredientes: [
       "Alface",
       "Tomate",
@@ -156,7 +156,7 @@ const receitas = [
     tempo: "25 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/frango-grelhado.jpg"),
     ingredientes: [
       "2 filés de peito de frango",
       "Suco de 1 limão",
@@ -176,7 +176,7 @@ const receitas = [
     tempo: "40 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/trogonoff-frango.jpg"),
     ingredientes: [
       "500 g de peito de frango",
       "1 cebola",
@@ -197,7 +197,7 @@ const receitas = [
     tempo: "20 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1575377427642-087cf684f29d?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/brigadeiro.jpg"),
     ingredientes: [
       "1 lata de leite condensado",
       "4 colheres de sopa de chocolate em pó",
@@ -215,7 +215,7 @@ const receitas = [
     tempo: "1h",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/torta-frango.jpg"),
     ingredientes: [
       "2 xícaras de farinha",
       "2 xícaras de leite",
@@ -238,7 +238,7 @@ const receitas = [
     tempo: "1h30",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1627054249508-7f4e9f8f1f5f?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/coxinha.jpg"),
     ingredientes: [
       "500 g de farinha de trigo",
       "500 ml de caldo de frango",
@@ -259,7 +259,7 @@ const receitas = [
     tempo: "2h30",
     dificuldade: "Difícil",
     imagem:
-      "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/feijoada.jpg"),
     ingredientes: [
       "500 g de feijão preto",
       "300 g de carne seca",
@@ -282,7 +282,7 @@ const receitas = [
     tempo: "1h20",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1574868234756-9a5c0d8b2a7f?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/lasanha.jpg"),
     ingredientes: [
       "500 g de massa para lasanha",
       "500 g de carne moída",
@@ -303,7 +303,7 @@ const receitas = [
     tempo: "40 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/sopa-legumes.jpg"),
     ingredientes: [
       "2 batatas",
       "2 cenouras",
@@ -325,7 +325,7 @@ const receitas = [
     tempo: "10 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1510693206972-df098062cb71?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/omelete.jpg"),
     ingredientes: [
       "3 ovos",
       "2 colheres de sopa de leite",
@@ -346,7 +346,7 @@ const receitas = [
     tempo: "35 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1629832726549-8f0c8c6a0e8f?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/pao-queijo.jpg"),
     ingredientes: [
       "500 g de polvilho doce",
       "250 ml de leite",
@@ -366,7 +366,7 @@ const receitas = [
     tempo: "10 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/acai-frutas.jpg"),
     ingredientes: [
       "300 g de polpa de açaí",
       "1 banana",
@@ -385,7 +385,7 @@ const receitas = [
     tempo: "20 min + geladeira",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/mousse-maracuja.jpg"),
     ingredientes: [
       "1 lata de leite condensado",
       "1 caixa de creme de leite",
@@ -403,7 +403,7 @@ const receitas = [
     tempo: "20 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/panqueca-doce.jpg"),
     ingredientes: [
       "1 xícara de farinha",
       "1 ovo",
@@ -424,7 +424,7 @@ const receitas = [
     tempo: "45 min",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/risoto-queijo.jpg"),
     ingredientes: [
       "2 xícaras de arroz arbóreo",
       "1 litro de caldo de legumes",
@@ -445,7 +445,7 @@ const receitas = [
     tempo: "1h10",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/escondidinho-carne.jpg"),
     ingredientes: [
       "500 g de carne moída",
       "1 kg de mandioca",
@@ -467,7 +467,7 @@ const receitas = [
     tempo: "40 min",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1557872943-16a5ac26437e?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/yakissoba.jpg"),
     ingredientes: [
       "300 g de macarrão para yakissoba",
       "300 g de frango ou carne",
@@ -488,7 +488,7 @@ const receitas = [
     tempo: "15 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1506084868230-bb9d95c24759?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/crepioca.jpg"),
     ingredientes: [
       "2 ovos",
       "2 colheres de sopa de tapioca",
@@ -508,7 +508,7 @@ const receitas = [
     tempo: "5 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1577805947697-89e18249d767?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/vitamina-banana.jpg"),
     ingredientes: [
       "2 bananas maduras",
       "300 ml de leite",
@@ -527,7 +527,7 @@ const receitas = [
     tempo: "5 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/suco-natural.jpg"),
     ingredientes: [
       "2 laranjas",
       "200 ml de água",
@@ -545,7 +545,7 @@ const receitas = [
     tempo: "30 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/cookie-caseiro.jpg"),
     ingredientes: [
       "2 xícaras de farinha",
       "100 g de manteiga",
@@ -565,7 +565,7 @@ const receitas = [
     tempo: "1h30 + geladeira",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/pudim-leite-condensado.jpg"),
     ingredientes: [
       "1 lata de leite condensado",
       "2 medidas de leite",
@@ -583,7 +583,7 @@ const receitas = [
     tempo: "1h30",
     dificuldade: "Médio",
     imagem:
-      "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/churrasco..jpg"),
     ingredientes: [
       "1 kg de carne bovina",
       "500 g de linguiça",
@@ -603,7 +603,7 @@ const receitas = [
     tempo: "50 min",
     dificuldade: "Fácil",
     imagem:
-      "https://images.unsplash.com/photo-1621303837174-89787a7d4729?auto=format&fit=crop&w=900&q=80",
+      require("../assets/receitas/bolo-cenoura.jpg"),
     ingredientes: [
       "3 cenouras médias",
       "3 ovos",

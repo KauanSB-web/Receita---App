@@ -263,9 +263,7 @@ export default function FavoritosScreen() {
                     activeOpacity={0.88}
                   >
                     <Image
-                      source={{
-                        uri: receita.imagem,
-                      }}
+                      source={receita.imagem}
                       style={styles.imagem}
                       resizeMode="cover"
                     />

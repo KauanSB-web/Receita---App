@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
+  Image,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -13,20 +15,69 @@ import {
   signOut,
   User,
 } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 
 import { auth } from '../firebase';
+
+const AVATAR_KEY_PREFIX = '@receitai_avatar_';
+const AVATAR_VISITANTE_KEY = '@receitai_avatar_visitante';
+const GALERIA_PERGUNTA_KEY = '@receitai_galeria_pergunta_autorizada';
+
+const avatares = [
+  '👨‍🍳',
+  '👩‍🍳',
+  '🧑‍🍳',
+  '🥑',
+  '🍕',
+  '🍓',
+  '🧁',
+  '🍔',
+];
+
+function obterChaveAvatar(usuario: User | null): string {
+  if (usuario?.uid) {
+    return `${AVATAR_KEY_PREFIX}${usuario.uid}`;
+  }
+
+  return AVATAR_VISITANTE_KEY;
+}
+
+function ehImagemAvatar(valor: string): boolean {
+  return (
+    valor.startsWith('file://') ||
+    valor.startsWith('content://') ||
+    valor.startsWith('ph://') ||
+    valor.startsWith('assets-library://')
+  );
+}
 
 export default function ModalPerfil() {
   const router = useRouter();
 
   const [usuario, setUsuario] = useState<User | null>(null);
   const [saindo, setSaindo] = useState(false);
+  const [avatar, setAvatar] = useState('👨‍🍳');
+  const [mostrarAvatares, setMostrarAvatares] = useState(false);
 
   useEffect(() => {
     const cancelarObservacao = onAuthStateChanged(
       auth,
-      (user) => {
+      async (user) => {
         setUsuario(user);
+
+        try {
+          const chave = obterChaveAvatar(user);
+          const avatarSalvo = await AsyncStorage.getItem(chave);
+
+          if (avatarSalvo) {
+            setAvatar(avatarSalvo);
+          } else {
+            setAvatar('👨‍🍳');
+          }
+        } catch (error) {
+          console.log('Erro ao carregar avatar:', error);
+        }
       }
     );
 
@@ -40,6 +91,119 @@ export default function ModalPerfil() {
 
   const emailUsuario =
     usuario?.email || 'Você ainda não está conectado';
+
+  const selecionarAvatar = async (novoAvatar: string) => {
+    try {
+      const chave = obterChaveAvatar(usuario);
+
+      await AsyncStorage.setItem(chave, novoAvatar);
+
+      setAvatar(novoAvatar);
+      setMostrarAvatares(false);
+    } catch (error) {
+      console.log('Erro ao salvar avatar:', error);
+    }
+  };
+
+  const abrirGaleria = async () => {
+    try {
+      const permissao =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissao.granted) {
+        Alert.alert(
+          'Permissão necessária',
+          'Para escolher uma foto de perfil, é necessário permitir o acesso às suas fotos.'
+        );
+
+        return;
+      }
+
+      // Guarda que o usuário já autorizou a confirmação do Receitaí.
+      await AsyncStorage.setItem(
+        GALERIA_PERGUNTA_KEY,
+        'true'
+      );
+
+      const resultado =
+        await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.9,
+        });
+
+      if (resultado.canceled) {
+        return;
+      }
+
+      const imagemSelecionada =
+        resultado.assets?.[0]?.uri;
+
+      if (!imagemSelecionada) {
+        return;
+      }
+
+      const chave = obterChaveAvatar(usuario);
+
+      await AsyncStorage.setItem(
+        chave,
+        imagemSelecionada
+      );
+
+      setAvatar(imagemSelecionada);
+      setMostrarAvatares(false);
+    } catch (error) {
+      console.log(
+        'Erro ao escolher foto da galeria:',
+        error
+      );
+
+      Alert.alert(
+        'Não foi possível escolher a foto',
+        'Ocorreu um erro ao acessar a galeria. Tente novamente.'
+      );
+    }
+  };
+
+  const escolherDaGaleria = async () => {
+    try {
+      const perguntaJaAceita =
+        await AsyncStorage.getItem(
+          GALERIA_PERGUNTA_KEY
+        );
+
+      // Se o usuário já aceitou anteriormente,
+      // abre a galeria diretamente.
+      if (perguntaJaAceita === 'true') {
+        await abrirGaleria();
+        return;
+      }
+
+      // Primeira vez: pergunta antes de abrir.
+      Alert.alert(
+        'Acesso à galeria',
+        'O Receitaí precisa acessar suas fotos para você escolher uma foto de perfil. Deseja permitir o acesso?',
+        [
+          {
+            text: 'Não',
+            style: 'cancel',
+          },
+          {
+            text: 'Sim',
+            onPress: async () => {
+              await abrirGaleria();
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.log(
+        'Erro ao verificar permissão da galeria:',
+        error
+      );
+    }
+  };
 
   const sair = async () => {
     try {
@@ -62,6 +226,7 @@ export default function ModalPerfil() {
             <Text style={styles.logo}>
               Receita<Text style={styles.logoLaranja}>í</Text>
             </Text>
+
             <Text style={styles.headerSubtitulo}>
               Minha conta
             </Text>
@@ -82,13 +247,34 @@ export default function ModalPerfil() {
 
         {/* PERFIL */}
         <View style={styles.perfilCard}>
-          <View style={styles.avatar}>
-            <Ionicons
-              name="person"
-              size={34}
-              color="#E76518"
-            />
-          </View>
+          <TouchableOpacity
+            style={styles.avatarContainer}
+            onPress={() =>
+              setMostrarAvatares(!mostrarAvatares)
+            }
+            activeOpacity={0.8}
+          >
+            <View style={styles.avatar}>
+              {ehImagemAvatar(avatar) ? (
+                <Image
+                  source={{ uri: avatar }}
+                  style={styles.avatarImagem}
+                />
+              ) : (
+                <Text style={styles.avatarTexto}>
+                  {avatar}
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.camera}>
+              <Ionicons
+                name="camera"
+                size={15}
+                color="#FFFFFF"
+              />
+            </View>
+          </TouchableOpacity>
 
           <View style={styles.perfilTextos}>
             <Text
@@ -108,6 +294,7 @@ export default function ModalPerfil() {
             {usuario && (
               <View style={styles.status}>
                 <View style={styles.statusBolinha} />
+
                 <Text style={styles.statusTexto}>
                   Conta conectada
                 </Text>
@@ -115,6 +302,141 @@ export default function ModalPerfil() {
             )}
           </View>
         </View>
+
+        {/* ALTERAR AVATAR */}
+        <TouchableOpacity
+          style={styles.alterarAvatar}
+          onPress={() =>
+            setMostrarAvatares(!mostrarAvatares)
+          }
+          activeOpacity={0.8}
+        >
+          <View style={styles.alterarIcone}>
+            <Ionicons
+              name="image-outline"
+              size={22}
+              color="#E76518"
+            />
+          </View>
+
+          <View style={styles.alterarTextos}>
+            <Text style={styles.alterarTitulo}>
+              Alterar foto de perfil
+            </Text>
+
+            <Text style={styles.alterarSubtitulo}>
+              Escolha uma foto ou avatar para sua conta
+            </Text>
+          </View>
+
+          <Ionicons
+            name={
+              mostrarAvatares
+                ? 'chevron-up'
+                : 'chevron-forward'
+            }
+            size={21}
+            color="#C8C8C8"
+          />
+        </TouchableOpacity>
+
+        {/* OPÇÕES DE AVATAR */}
+        {mostrarAvatares && (
+          <View style={styles.seletorAvatar}>
+            <Text style={styles.seletorTitulo}>
+              Escolha sua foto
+            </Text>
+
+            <Text style={styles.seletorSubtitulo}>
+              Use uma foto da galeria ou escolha um avatar.
+            </Text>
+
+            {/* GALERIA */}
+            <TouchableOpacity
+              style={[
+                styles.botaoGaleria,
+                ehImagemAvatar(avatar) &&
+                  styles.botaoGaleriaSelecionado,
+              ]}
+              onPress={escolherDaGaleria}
+              activeOpacity={0.8}
+            >
+              <View style={styles.galeriaIcone}>
+                <Ionicons
+                  name="images-outline"
+                  size={24}
+                  color="#E76518"
+                />
+              </View>
+
+              <View style={styles.galeriaTextos}>
+                <Text style={styles.galeriaTitulo}>
+                  Escolher da galeria
+                </Text>
+
+                <Text style={styles.galeriaSubtitulo}>
+                  Use uma foto do seu celular
+                </Text>
+              </View>
+
+              {ehImagemAvatar(avatar) ? (
+                <View style={styles.checkGaleria}>
+                  <Ionicons
+                    name="checkmark"
+                    size={14}
+                    color="#FFFFFF"
+                  />
+                </View>
+              ) : (
+                <Ionicons
+                  name="chevron-forward"
+                  size={21}
+                  color="#C8C8C8"
+                />
+              )}
+            </TouchableOpacity>
+
+            {/* AVATARES */}
+            <Text style={styles.avataresTitulo}>
+              Ou escolha um avatar
+            </Text>
+
+            <View style={styles.gradeAvatares}>
+              {avatares.map((item) => {
+                const selecionado = avatar === item;
+
+                return (
+                  <TouchableOpacity
+                    key={item}
+                    style={[
+                      styles.opcaoAvatar,
+                      selecionado &&
+                        styles.opcaoAvatarSelecionada,
+                    ]}
+                    onPress={() =>
+                      selecionarAvatar(item)
+                    }
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.opcaoAvatarTexto}>
+                      {item}
+                    </Text>
+
+                    {selecionado && (
+                      <View style={styles.checkAvatar}>
+                        <Ionicons
+                          name="checkmark"
+                          size={13}
+                          color="#FFFFFF"
+                        />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
 
         {/* MENU */}
         <View style={styles.menu}>
@@ -185,27 +507,25 @@ export default function ModalPerfil() {
               </TouchableOpacity>
             </>
           ) : (
-            <>
-              <View style={styles.menuItem}>
-                <View style={styles.icone}>
-                  <Ionicons
-                    name="person-outline"
-                    size={24}
-                    color="#E76518"
-                  />
-                </View>
-
-                <View style={styles.menuTexto}>
-                  <Text style={styles.menuTitulo}>
-                    Minha conta
-                  </Text>
-
-                  <Text style={styles.menuSubtitulo}>
-                    Sua conta está conectada
-                  </Text>
-                </View>
+            <View style={styles.menuItem}>
+              <View style={styles.icone}>
+                <Ionicons
+                  name="person-outline"
+                  size={24}
+                  color="#E76518"
+                />
               </View>
-            </>
+
+              <View style={styles.menuTexto}>
+                <Text style={styles.menuTitulo}>
+                  Minha conta
+                </Text>
+
+                <Text style={styles.menuSubtitulo}>
+                  Sua conta está conectada
+                </Text>
+              </View>
+            </View>
           )}
 
           <View style={styles.divisor} />
@@ -213,7 +533,9 @@ export default function ModalPerfil() {
           {/* FAVORITOS */}
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => router.push('/(tabs)/favoritos')}
+            onPress={() =>
+              router.push('/(tabs)/favoritos')
+            }
             activeOpacity={0.8}
           >
             <View style={styles.icone}>
@@ -279,7 +601,9 @@ export default function ModalPerfil() {
           {/* CONFIGURAÇÕES */}
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => router.push('/configuracoes')}
+            onPress={() =>
+              router.push('/configuracoes')
+            }
             activeOpacity={0.8}
           >
             <View style={styles.icone}>
@@ -328,7 +652,9 @@ export default function ModalPerfil() {
 
                 <View style={styles.menuTexto}>
                   <Text style={styles.menuTituloSair}>
-                    {saindo ? 'Saindo...' : 'Sair da conta'}
+                    {saindo
+                      ? 'Saindo...'
+                      : 'Sair da conta'}
                   </Text>
 
                   <Text style={styles.menuSubtitulo}>
@@ -415,7 +741,7 @@ const styles = StyleSheet.create({
     padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 22,
+    marginBottom: 14,
     elevation: 2,
     shadowColor: '#000000',
     shadowOpacity: 0.04,
@@ -426,6 +752,11 @@ const styles = StyleSheet.create({
     },
   },
 
+  avatarContainer: {
+    position: 'relative',
+    marginRight: 15,
+  },
+
   avatar: {
     width: 68,
     height: 68,
@@ -433,7 +764,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF0E6',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#F4D8C5',
+    overflow: 'hidden',
+  },
+
+  avatarImagem: {
+    width: '100%',
+    height: '100%',
+  },
+
+  avatarTexto: {
+    fontSize: 39,
+  },
+
+  camera: {
+    position: 'absolute',
+    right: -3,
+    bottom: -2,
+    width: 27,
+    height: 27,
+    borderRadius: 14,
+    backgroundColor: '#E76518',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
 
   perfilTextos: {
@@ -470,6 +826,179 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#4CAF50',
+  },
+
+  alterarAvatar: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    minHeight: 70,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    elevation: 1,
+    shadowColor: '#000000',
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+  },
+
+  alterarIcone: {
+    width: 43,
+    height: 43,
+    borderRadius: 13,
+    backgroundColor: '#FFF3EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+
+  alterarTextos: {
+    flex: 1,
+  },
+
+  alterarTitulo: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#292929',
+  },
+
+  alterarSubtitulo: {
+    fontSize: 12,
+    color: '#858585',
+    marginTop: 3,
+  },
+
+  seletorAvatar: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 1,
+    shadowColor: '#000000',
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+  },
+
+  seletorTitulo: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#292929',
+  },
+
+  seletorSubtitulo: {
+    fontSize: 12,
+    color: '#858585',
+    marginTop: 3,
+    marginBottom: 14,
+  },
+
+  botaoGaleria: {
+    minHeight: 70,
+    borderRadius: 17,
+    backgroundColor: '#FFF8F2',
+    borderWidth: 1.5,
+    borderColor: '#F0E0D3',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  botaoGaleriaSelecionado: {
+    backgroundColor: '#FFF0E6',
+    borderColor: '#E76518',
+  },
+
+  galeriaIcone: {
+    width: 44,
+    height: 44,
+    borderRadius: 13,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+
+  galeriaTextos: {
+    flex: 1,
+  },
+
+  galeriaTitulo: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#292929',
+  },
+
+  galeriaSubtitulo: {
+    fontSize: 12,
+    color: '#858585',
+    marginTop: 3,
+  },
+
+  checkGaleria: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#E76518',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  avataresTitulo: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#777777',
+    marginTop: 17,
+    marginBottom: 10,
+  },
+
+  gradeAvatares: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+
+  opcaoAvatar: {
+    width: '22%',
+    aspectRatio: 1,
+    borderRadius: 17,
+    backgroundColor: '#FFF8F2',
+    borderWidth: 1.5,
+    borderColor: '#F0E0D3',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+
+  opcaoAvatarSelecionada: {
+    backgroundColor: '#FFF0E6',
+    borderColor: '#E76518',
+  },
+
+  opcaoAvatarTexto: {
+    fontSize: 32,
+  },
+
+  checkAvatar: {
+    position: 'absolute',
+    right: 3,
+    top: 3,
+    width: 19,
+    height: 19,
+    borderRadius: 10,
+    backgroundColor: '#E76518',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   menu: {

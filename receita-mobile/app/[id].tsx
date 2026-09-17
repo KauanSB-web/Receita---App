@@ -173,7 +173,7 @@ export default function ReceitaDetalhesScreen() {
         {/* IMAGEM */}
         <View style={styles.imagemContainer}>
           <Image
-            source={{ uri: receita.imagem }}
+            source={receita.imagem}
             style={styles.imagem}
             resizeMode="cover"
           />
