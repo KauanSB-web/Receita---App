@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -12,7 +13,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import {
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
 import { auth } from '../firebase';
 
 export default function LoginScreen() {
@@ -23,6 +27,7 @@ export default function LoginScreen() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [entrando, setEntrando] = useState(false);
+  const [recuperandoSenha, setRecuperandoSenha] = useState(false);
 
   const entrar = async () => {
     setErro('');
@@ -39,13 +44,11 @@ export default function LoginScreen() {
       return;
     }
 
-    if (senha.length < 6) {
-      setErro('A senha deve ter pelo menos 6 caracteres.');
-      return;
-    }
-
     try {
       setEntrando(true);
+
+      // Mantém os fluxos de autenticação do Firebase em português.
+      auth.languageCode = 'pt-BR';
 
       await signInWithEmailAndPassword(
         auth,
@@ -67,11 +70,17 @@ export default function LoginScreen() {
           break;
 
         case 'auth/wrong-password':
-          setErro('Senha incorreta.');
+          setErro('E-mail ou senha incorretos.');
           break;
 
         case 'auth/invalid-email':
           setErro('Digite um e-mail válido.');
+          break;
+
+        case 'auth/user-disabled':
+          setErro(
+            'Esta conta foi desativada. Entre em contato com o suporte.'
+          );
           break;
 
         case 'auth/too-many-requests':
@@ -96,11 +105,93 @@ export default function LoginScreen() {
     }
   };
 
+  const recuperarSenha = async () => {
+    setErro('');
+
+    const emailLimpo = email.trim().toLowerCase();
+
+    if (!emailLimpo) {
+      setErro(
+        'Digite seu e-mail acima para receber o link de recuperação.'
+      );
+      return;
+    }
+
+    if (!emailLimpo.includes('@')) {
+      setErro('Digite um e-mail válido.');
+      return;
+    }
+
+    try {
+      setRecuperandoSenha(true);
+
+      // Define o idioma do e-mail enviado pelo Firebase.
+      auth.languageCode = 'pt-BR';
+
+      await sendPasswordResetEmail(
+        auth,
+        emailLimpo
+      );
+
+      Alert.alert(
+        'E-mail enviado',
+        'Se este e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.'
+      );
+    } catch (error: any) {
+      console.log(
+        'Erro ao recuperar senha:',
+        error
+      );
+
+      switch (error?.code) {
+        case 'auth/invalid-email':
+          setErro('Digite um e-mail válido.');
+          break;
+
+        case 'auth/user-not-found':
+          // Mantemos uma mensagem genérica por segurança.
+          setErro(
+            'Se este e-mail estiver cadastrado, você receberá as instruções de recuperação.'
+          );
+          break;
+
+        case 'auth/too-many-requests':
+          setErro(
+            'Muitas solicitações. Aguarde um pouco e tente novamente.'
+          );
+          break;
+
+        case 'auth/network-request-failed':
+          setErro(
+            'Não foi possível conectar ao Firebase. Verifique sua internet.'
+          );
+          break;
+
+        case 'auth/operation-not-allowed':
+          setErro(
+            'A recuperação de senha não está disponível no momento.'
+          );
+          break;
+
+        default:
+          setErro(
+            'Não foi possível enviar o e-mail de recuperação. Tente novamente.'
+          );
+      }
+    } finally {
+      setRecuperandoSenha(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={
+          Platform.OS === 'ios'
+            ? 'padding'
+            : undefined
+        }
       >
         <ScrollView
           contentContainerStyle={styles.scroll}
@@ -112,6 +203,9 @@ export default function LoginScreen() {
               style={styles.voltar}
               onPress={() => router.back()}
               activeOpacity={0.8}
+              disabled={
+                entrando || recuperandoSenha
+              }
             >
               <Ionicons
                 name="arrow-back"
@@ -131,7 +225,10 @@ export default function LoginScreen() {
             </View>
 
             <Text style={styles.logo}>
-              Receita<Text style={styles.logoLaranja}>í</Text>
+              Receita
+              <Text style={styles.logoLaranja}>
+                í
+              </Text>
             </Text>
 
             <Text style={styles.logoSubtitulo}>
@@ -149,7 +246,9 @@ export default function LoginScreen() {
             </Text>
 
             <View style={styles.campoArea}>
-              <Text style={styles.label}>E-mail</Text>
+              <Text style={styles.label}>
+                E-mail
+              </Text>
 
               <View style={styles.inputContainer}>
                 <Ionicons
@@ -167,21 +266,33 @@ export default function LoginScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  editable={!entrando}
+                  autoComplete="email"
+                  editable={
+                    !entrando &&
+                    !recuperandoSenha
+                  }
                 />
               </View>
             </View>
 
             <View style={styles.campoArea}>
               <View style={styles.senhaTopo}>
-                <Text style={styles.label}>Senha</Text>
+                <Text style={styles.label}>
+                  Senha
+                </Text>
 
                 <TouchableOpacity
                   activeOpacity={0.7}
-                  disabled={entrando}
+                  disabled={
+                    entrando ||
+                    recuperandoSenha
+                  }
+                  onPress={recuperarSenha}
                 >
                   <Text style={styles.esqueceu}>
-                    Esqueceu a senha?
+                    {recuperandoSenha
+                      ? 'Enviando...'
+                      : 'Esqueceu a senha?'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -202,15 +313,26 @@ export default function LoginScreen() {
                   secureTextEntry={!mostrarSenha}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  editable={!entrando}
+                  autoComplete="password"
+                  editable={
+                    !entrando &&
+                    !recuperandoSenha
+                  }
+                  onSubmitEditing={entrar}
+                  returnKeyType="go"
                 />
 
                 <TouchableOpacity
                   onPress={() =>
-                    setMostrarSenha(!mostrarSenha)
+                    setMostrarSenha(
+                      !mostrarSenha
+                    )
                   }
                   activeOpacity={0.7}
-                  disabled={entrando}
+                  disabled={
+                    entrando ||
+                    recuperandoSenha
+                  }
                 >
                   <Ionicons
                     name={
@@ -242,14 +364,20 @@ export default function LoginScreen() {
             <TouchableOpacity
               style={[
                 styles.botaoEntrar,
-                entrando && styles.botaoDesativado,
+                entrando &&
+                  styles.botaoDesativado,
               ]}
               onPress={entrar}
               activeOpacity={0.85}
-              disabled={entrando}
+              disabled={
+                entrando ||
+                recuperandoSenha
+              }
             >
               <Text style={styles.botaoTexto}>
-                {entrando ? 'Entrando...' : 'Entrar'}
+                {entrando
+                  ? 'Entrando...'
+                  : 'Entrar'}
               </Text>
 
               {!entrando ? (
@@ -263,7 +391,11 @@ export default function LoginScreen() {
 
             <View style={styles.divisor}>
               <View style={styles.linha} />
-              <Text style={styles.ou}>ou</Text>
+
+              <Text style={styles.ou}>
+                ou
+              </Text>
+
               <View style={styles.linha} />
             </View>
 
@@ -273,9 +405,14 @@ export default function LoginScreen() {
               </Text>
 
               <TouchableOpacity
-                onPress={() => router.push('/cadastro')}
+                onPress={() =>
+                  router.push('/cadastro')
+                }
                 activeOpacity={0.7}
-                disabled={entrando}
+                disabled={
+                  entrando ||
+                  recuperandoSenha
+                }
               >
                 <Text style={styles.cadastroLink}>
                   Criar conta
@@ -507,3 +644,4 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
 });
+

@@ -50,8 +50,28 @@ export default function CadastroScreen() {
       return;
     }
 
-    if (senha.length < 6) {
-      setErro('A senha deve ter pelo menos 6 caracteres.');
+    if (senha.length < 8) {
+      setErro('A senha deve ter pelo menos 8 caracteres.');
+      return;
+    }
+
+    if (!/[A-Z]/.test(senha)) {
+      setErro('A senha deve conter pelo menos uma letra maiúscula.');
+      return;
+    }
+
+    if (!/[a-z]/.test(senha)) {
+      setErro('A senha deve conter pelo menos uma letra minúscula.');
+      return;
+    }
+
+    if (!/[0-9]/.test(senha)) {
+      setErro('A senha deve conter pelo menos um número.');
+      return;
+    }
+
+    if (!/[^A-Za-z0-9]/.test(senha)) {
+      setErro('A senha deve conter pelo menos um caractere especial.');
       return;
     }
 
@@ -87,7 +107,9 @@ export default function CadastroScreen() {
           break;
 
         case 'auth/weak-password':
-          setErro('A senha deve ter pelo menos 6 caracteres.');
+          setErro(
+            'A senha precisa ter 8 caracteres, incluindo maiúscula, minúscula, número e caractere especial.'
+          );
           break;
 
         case 'auth/operation-not-allowed':
