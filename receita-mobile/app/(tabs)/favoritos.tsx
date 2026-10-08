@@ -19,9 +19,13 @@ import {
   onAuthStateChanged,
   User,
 } from 'firebase/auth';
+import {
+  collection,
+  getDocs,
+} from 'firebase/firestore';
 
 import receitas from '../../data/receitas';
-import { auth } from '../../firebase';
+import { auth, db } from '../../firebase';
 
 const FAVORITOS_VISITANTE_KEY =
   '@receitai_favoritos_visitante';
@@ -43,12 +47,15 @@ export default function FavoritosScreen() {
     auth.currentUser
   );
 
-  const [favoritos, setFavoritos] = useState<number[]>(
-    []
-  );
+  const [favoritos, setFavoritos] = useState<
+    (number | string)[]
+  >([]);
 
   const [atualizando, setAtualizando] =
     useState(false);
+
+  const [receitasFirestore, setReceitasFirestore] =
+    useState<any[]>([]);
 
   /*
    * OBSERVA A CONTA ATUAL
@@ -76,11 +83,26 @@ export default function FavoritosScreen() {
         chaveFavoritos
       );
 
-      const ids: number[] = dados
+      const ids: (number | string)[] = dados
         ? JSON.parse(dados)
         : [];
 
       setFavoritos(ids);
+
+      if (usuario?.uid) {
+        const snapshot = await getDocs(
+          collection(db, 'users', usuario.uid, 'receitas')
+        );
+
+        const receitas = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...item.data(),
+        }));
+
+        setReceitasFirestore(receitas);
+      } else {
+        setReceitasFirestore([]);
+      }
     } catch (error) {
       console.log(
         'Erro ao carregar favoritos:',
@@ -117,7 +139,7 @@ export default function FavoritosScreen() {
   /*
    * REMOVER FAVORITO
    */
-  const removerFavorito = async (id: number) => {
+  const removerFavorito = async (id: number | string) => {
     try {
       const novosFavoritos =
         favoritos.filter(
@@ -142,12 +164,29 @@ export default function FavoritosScreen() {
     }
   };
 
-  const receitasFavoritas =
-    receitas.filter((receita) =>
-      favoritos.includes(
-        Number(receita.id)
+  const receitasFavoritas = [
+    ...receitas
+      .filter((receita) =>
+        favoritos.includes(Number(receita.id))
       )
-    );
+      .map((receita) => ({
+        ...receita,
+        origem: 'catalogo',
+      })),
+    ...receitasFirestore
+      .filter((receita) =>
+        favoritos.includes(String(receita.id))
+      )
+      .map((receita) => ({
+        id: receita.id,
+        nome: receita.titulo || 'Receita sem título',
+        categoria: receita.categoria || 'Sem categoria',
+        tempo: receita.tempo || '—',
+        dificuldade: receita.dificuldade || '—',
+        imagemUrl: receita.imagemUrl || '',
+        origem: 'firestore',
+      })),
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -262,11 +301,23 @@ export default function FavoritosScreen() {
                     }
                     activeOpacity={0.88}
                   >
-                    <Image
-                      source={receita.imagem}
-                      style={styles.imagem}
-                      resizeMode="cover"
-                    />
+                    {receita.origem === 'catalogo' ? (
+                      <Image
+                        source={(receita as any).imagem}
+                        style={styles.imagem}
+                        resizeMode="cover"
+                      />
+                    ) : (receita as any).imagemUrl ? (
+                      <Image
+                        source={{ uri: (receita as any).imagemUrl }}
+                        style={styles.imagem}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={{ width: "100%", height: "100%", backgroundColor: "#F0E8E1", alignItems: "center", justifyContent: "center" }}>
+                        <Text style={{ fontSize: 64 }}>🍽️</Text>
+                      </View>
+                    )}
 
                     <View style={styles.info}>
                       <Text
@@ -327,9 +378,7 @@ export default function FavoritosScreen() {
                       style={styles.remover}
                       onPress={() =>
                         removerFavorito(
-                          Number(
-                            receita.id
-                          )
+                          receita.id
                         )
                       }
                       activeOpacity={0.75}

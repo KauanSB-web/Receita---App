@@ -13,7 +13,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 import receitas from '../data/receitas';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const FAVORITOS_VISITANTE_KEY = '@receitai_favoritos_visitante';
 
@@ -29,6 +30,9 @@ export default function ReceitaDetalhesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
+  const [receitaFirestore, setReceitaFirestore] = useState<any>(null);
+  const [carregandoReceitaFirestore, setCarregandoReceitaFirestore] = useState(true);
+
   const receita = receitas.find(
     (item) => String(item.id) === String(id)
   );
@@ -39,6 +43,37 @@ export default function ReceitaDetalhesScreen() {
 
   const [favorita, setFavorita] = useState(false);
   const [carregandoFavorito, setCarregandoFavorito] = useState(true);
+
+  useEffect(() => {
+    const carregarReceitaFirestore = async () => {
+      if (receita || !usuario || !id) {
+        setReceitaFirestore(null);
+        setCarregandoReceitaFirestore(false);
+        return;
+      }
+
+      try {
+        const referencia = doc(db, "users", usuario.uid, "receitas", String(id));
+        const snapshot = await getDoc(referencia);
+
+        if (snapshot.exists()) {
+          setReceitaFirestore({
+            id: snapshot.id,
+            ...snapshot.data(),
+          });
+        } else {
+          setReceitaFirestore(null);
+        }
+      } catch (error) {
+        console.log("Erro ao carregar receita do Firestore:", error);
+        setReceitaFirestore(null);
+      } finally {
+        setCarregandoReceitaFirestore(false);
+      }
+    };
+
+    carregarReceitaFirestore();
+  }, [receita, usuario, id]);
 
   /*
    * OBSERVA A CONTA ATUAL
@@ -65,7 +100,7 @@ export default function ReceitaDetalhesScreen() {
       setCarregandoFavorito(true);
 
       try {
-        if (!receita) {
+        if (!receita && !receitaFirestore) {
           setFavorita(false);
           return;
         }
@@ -77,13 +112,15 @@ export default function ReceitaDetalhesScreen() {
           chaveFavoritos
         );
 
-        const favoritos: number[] = dados
+        const favoritos: (number | string)[] = dados
           ? JSON.parse(dados)
           : [];
 
-        setFavorita(
-          favoritos.includes(Number(receita.id))
-        );
+        const idReceita = receita
+          ? Number(receita.id)
+          : String(receitaFirestore.id);
+
+        setFavorita(favoritos.includes(idReceita));
       } catch (error) {
         console.log(
           'Erro ao carregar favorito:',
@@ -97,13 +134,13 @@ export default function ReceitaDetalhesScreen() {
     };
 
     carregarFavorito();
-  }, [receita?.id, usuario?.uid]);
+  }, [receita?.id, receitaFirestore?.id, usuario?.uid]);
 
   /*
    * ADICIONAR / REMOVER FAVORITO
    */
   const alternarFavorito = async () => {
-    if (!receita) return;
+    if (!receita && !receitaFirestore) return;
 
     try {
       const chaveFavoritos =
@@ -113,11 +150,13 @@ export default function ReceitaDetalhesScreen() {
         chaveFavoritos
       );
 
-      let favoritos: number[] = dados
+      let favoritos: (number | string)[] = dados
         ? JSON.parse(dados)
         : [];
 
-      const idReceita = Number(receita.id);
+      const idReceita = receita
+        ? Number(receita.id)
+        : String(receitaFirestore.id);
 
       if (favorita) {
         favoritos = favoritos.filter(
@@ -143,7 +182,18 @@ export default function ReceitaDetalhesScreen() {
     }
   };
 
-  if (!receita) {
+  const receitaAtual = receita ?? (receitaFirestore ? {
+    id: receitaFirestore.id,
+    nome: receitaFirestore.titulo || "Receita sem título",
+    categoria: receitaFirestore.categoria || "Sem categoria",
+    ingredientes: String(receitaFirestore.ingredientes || "").split("\n").map((item) => item.trim()).filter(Boolean),
+    preparo: receitaFirestore.preparo || "",
+    descricao: receitaFirestore.descricao || "",
+    tempo: receitaFirestore.tempo || "",
+    dificuldade: receitaFirestore.dificuldade || "",
+  } : null);
+
+  if (!receitaAtual) {
     return (
       <View style={styles.erroContainer}>
         <Text style={styles.erroEmoji}>🍽️</Text>
@@ -172,11 +222,17 @@ export default function ReceitaDetalhesScreen() {
       >
         {/* IMAGEM */}
         <View style={styles.imagemContainer}>
-          <Image
-            source={receita.imagem}
-            style={styles.imagem}
-            resizeMode="cover"
-          />
+          {receita ? (
+            <Image
+              source={receita.imagem}
+              style={styles.imagem}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.imagemSemFoto}>
+              <Text style={styles.imagemSemFotoTexto}>🍽️</Text>
+            </View>
+          )}
 
           <TouchableOpacity
             style={styles.voltarBotaoImagem}
@@ -215,11 +271,11 @@ export default function ReceitaDetalhesScreen() {
         {/* CONTEÚDO */}
         <View style={styles.conteudo}>
           <Text style={styles.categoria}>
-            {receita.categoria}
+            {receitaAtual.categoria}
           </Text>
 
           <Text style={styles.titulo}>
-            {receita.nome}
+            {receitaAtual.nome}
           </Text>
 
           {/* INFORMAÇÕES */}
@@ -232,7 +288,7 @@ export default function ReceitaDetalhesScreen() {
               />
 
               <Text style={styles.infoTexto}>
-                {receita.tempo}
+                {receitaAtual.tempo || "—"}
               </Text>
             </View>
 
@@ -244,7 +300,7 @@ export default function ReceitaDetalhesScreen() {
               />
 
               <Text style={styles.infoTexto}>
-                {receita.dificuldade}
+                {receitaAtual.dificuldade || "—"}
               </Text>
             </View>
           </View>
@@ -257,7 +313,7 @@ export default function ReceitaDetalhesScreen() {
           </Text>
 
           <View style={styles.ingredientes}>
-            {receita.ingredientes.map(
+            {receitaAtual.ingredientes.map(
               (ingrediente, index) => (
                 <View
                   key={`${ingrediente}-${index}`}
@@ -280,7 +336,7 @@ export default function ReceitaDetalhesScreen() {
 
           <View style={styles.preparoCard}>
             <Text style={styles.preparoTexto}>
-              {receita.preparo}
+              {receitaAtual.preparo}
             </Text>
           </View>
 
@@ -330,6 +386,18 @@ const styles = StyleSheet.create({
   imagemContainer: {
     height: 300,
     position: 'relative',
+  },
+
+  imagemSemFoto: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#F0E8E1",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  imagemSemFotoTexto: {
+    fontSize: 64,
   },
 
   imagem: {

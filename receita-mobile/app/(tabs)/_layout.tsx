@@ -52,6 +52,20 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="minhas-receitas"
+        options={{
+          title: "Minhas receitas",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons
+              name="book"
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="favoritos"
         options={{
           title: 'Favoritos',
